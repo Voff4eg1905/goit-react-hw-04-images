@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
+import propTypes from 'prop-types';
 import css from '../styles.module.css';
 
 export default class Searchbar extends Component {
   state = {
     query: '',
   };
-
+  static propTypes = {
+    onSubmit: propTypes.func.isRequired,
+  };
   onChange = event => {
     let input = event.currentTarget.value.toLowerCase();
     this.setState({ query: input });
