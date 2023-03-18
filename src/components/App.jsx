@@ -3,9 +3,9 @@ import css from './styles.module.css';
 import { fetchImages } from 'components/pixabayAPI';
 
 import Searchbar from './Searchbar/Searchbar';
-import { ImageGallery } from './ImageGallery/ImageGallery';
+import Loader from 'components/Loader/Loader';
 
-// import Loader from 'components/Loader/Loader';
+import { ImageGallery } from './ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 
 export default class App extends Component {
@@ -58,14 +58,14 @@ export default class App extends Component {
     return (
       <div className={css.App}>
         <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery
-          query={query}
-          searchResults={searchResults}
-          status={status}
-        ></ImageGallery>
+        {status === 'pending' && <Loader />}
+        {status === 'resolved' && (
+          <ImageGallery searchResults={searchResults}></ImageGallery>
+        )}
         {query !== '' && this.hasPagesLeft(page) && status === 'resolved' && (
           <Button onLoadMore={this.onLoadMore} />
         )}
+        {status === 'rejected' && <p>There is a mistake. Cant find {query}</p>}
       </div>
     );
   }
