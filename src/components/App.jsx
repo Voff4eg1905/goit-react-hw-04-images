@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import css from './styles.module.css';
 import { fetchImages } from 'components/pixabayAPI';
 
@@ -8,65 +8,65 @@ import Loader from 'components/Loader/Loader';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 
-export default class App extends Component {
-  state = {
-    query: '',
-    searchResults: {},
-    error: null,
-    status: 'idle',
-    total: 0,
-    page: 1,
+export default function App() {
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({});
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+
+  const onSubmit = search => {
+    setQuery(search);
+    setPage(1);
   };
-
-  onSubmit = query => {
-    this.setState({ query, page: 1 });
-  };
-
-  componentDidUpdate(_, prevState) {
-    const prevQuery = prevState.query;
-    const newQuery = this.state.query;
-
-    if (prevQuery !== newQuery || prevState.page !== this.state.page) {
-      this.setState({ status: 'pending' });
-      fetchImages(newQuery, this.state.page)
-        .then(query => {
-          if (query.totalHits !== 0) {
-            return this.setState({
-              searchResults: query,
-              total: query.totalHits,
-              status: 'resolved',
-              isLoading: false,
-            });
-          }
-          this.setState({
-            status: 'rejected',
-            isLoading: false,
-          });
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-  }
-  onLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+    setStatus('pending');
+    fetchImages(query, page)
+      .then(results => {
+        if (results.totalHits !== 0) {
+          return (
+            setSearchResults(results),
+            // setSearchResults(searchResults => ({ ...searchResults, results })),
+            setTotal(results.totalHits),
+            setStatus('resolved')
+          );
+        }
+        setStatus('rejected');
+      })
+      .catch(error => {
+        return setError(error), setStatus('rejected');
+      });
+  }, [query, page]);
+
+  const onLoadMore = () => {
+    setPage(prevpage => prevpage + 1);
   };
-  hasPagesLeft = page => {
-    const totalPages = this.state.total / 12;
+  const hasPagesLeft = page => {
+    const totalPages = total / 12;
     return page < totalPages;
   };
-  render() {
-    const { query, searchResults, status, page } = this.state;
-    return (
-      <div className={css.App}>
-        <Searchbar onSubmit={this.onSubmit} />
-        {status === 'pending' && <Loader />}
-        {status === 'resolved' && (
-          <ImageGallery searchResults={searchResults}></ImageGallery>
-        )}
-        {query !== '' && this.hasPagesLeft(page) && status === 'resolved' && (
-          <Button onLoadMore={this.onLoadMore} />
-        )}
-        {status === 'rejected' && <p>There is a mistake. Cant find {query}</p>}
-      </div>
-    );
-  }
+
+  return (
+    <div className={css.App}>
+      <Searchbar onSubmit={onSubmit} />
+      {status === 'pending' && <Loader />}
+      {status === 'resolved' && (
+        <ImageGallery searchResults={searchResults}></ImageGallery>
+      )}
+      {query !== '' && hasPagesLeft(page) && status === 'resolved' && (
+        <Button onLoadMore={onLoadMore} />
+      )}
+      {status === 'rejected' && (
+        <p>
+          There is a mistake. Cant find {query}
+          {error !== null && <p> cause of {error.message} </p>}
+          {/* Дописав щоб використати error. Не знаю чи правильно так */}
+        </p>
+      )}
+    </div>
+  );
 }
