@@ -10,7 +10,7 @@ import Button from 'components/Button/Button';
 
 export default function App() {
   const [query, setQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('idle');
   const [total, setTotal] = useState(0);
@@ -27,10 +27,14 @@ export default function App() {
     setStatus('pending');
     fetchImages(query, page)
       .then(results => {
+        const resultsArr = results.hits;
+
         if (results.totalHits !== 0) {
           return (
-            setSearchResults(results),
-            // setSearchResults(searchResults => ({ ...searchResults, results })),
+            setSearchResults(searchResults => [
+              ...searchResults,
+              ...resultsArr,
+            ]),
             setTotal(results.totalHits),
             setStatus('resolved')
           );
@@ -49,7 +53,6 @@ export default function App() {
     const totalPages = total / 12;
     return page < totalPages;
   };
-
   return (
     <div className={css.App}>
       <Searchbar onSubmit={onSubmit} />
@@ -64,7 +67,6 @@ export default function App() {
         <p>
           There is a mistake. Cant find {query}
           {error !== null && <p> cause of {error.message} </p>}
-          {/* Дописав щоб використати error. Не знаю чи правильно так */}
         </p>
       )}
     </div>

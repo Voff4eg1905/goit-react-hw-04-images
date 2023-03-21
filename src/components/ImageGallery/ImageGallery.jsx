@@ -5,9 +5,10 @@ import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import propTypes from 'prop-types';
 
 export const ImageGallery = ({ searchResults }) => {
+  console.log(searchResults);
   return (
     <ul className={css.ImageGallery}>
-      {searchResults.hits.map(({ id, webformatURL, largeImageURL, tags }) => {
+      {searchResults.map(({ id, webformatURL, largeImageURL, tags }) => {
         return (
           <ImageGalleryItem
             key={id}
@@ -22,5 +23,5 @@ export const ImageGallery = ({ searchResults }) => {
 };
 
 ImageGallery.propTypes = {
-  searchResults: propTypes.object,
+  searchResults: propTypes.array,
 };
