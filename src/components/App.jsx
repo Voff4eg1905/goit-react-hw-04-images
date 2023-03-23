@@ -19,6 +19,7 @@ export default function App() {
   const onSubmit = search => {
     setQuery(search);
     setPage(1);
+    setSearchResults([]);
   };
   useEffect(() => {
     if (query === '') {
@@ -31,10 +32,7 @@ export default function App() {
 
         if (results.totalHits !== 0) {
           return (
-            setSearchResults(searchResults => [
-              ...searchResults,
-              ...resultsArr,
-            ]),
+            setSearchResults(prevState => [...prevState, ...resultsArr]),
             setTotal(results.totalHits),
             setStatus('resolved')
           );
@@ -57,9 +55,7 @@ export default function App() {
     <div className={css.App}>
       <Searchbar onSubmit={onSubmit} />
       {status === 'pending' && <Loader />}
-      {status === 'resolved' && (
-        <ImageGallery searchResults={searchResults}></ImageGallery>
-      )}
+      <ImageGallery searchResults={searchResults}></ImageGallery>
       {query !== '' && hasPagesLeft(page) && status === 'resolved' && (
         <Button onLoadMore={onLoadMore} />
       )}
